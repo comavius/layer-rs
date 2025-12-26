@@ -2,5 +2,8 @@
 name = "layer-rs"
 version = "0.1.0"
 edition = "2024"
-
-[dependencies]
+authors = ["Daisuke Matsunami (Comavius) <comavius@proton.me>"]
+description = "Effect-TS like type level DI container in Rust, with O(log n) get and insert"
+publish = true
+license-file = "LICENSE"
+repository = "https://github.com/comavius/layer-rs"
