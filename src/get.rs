@@ -2,7 +2,10 @@ use super::*;
 
 /// Getter trait for type level binary tree node.
 /// This requires that the target requirement exists in the tree.
-pub trait Get<Target, Path> {
+pub trait Get<Target, Path>
+where
+    Self: Has<Target, Path>,
+{
     fn get(&self) -> &Target;
     fn get_mut(&mut self) -> &mut Target;
 }

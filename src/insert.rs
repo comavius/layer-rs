@@ -1,10 +1,11 @@
 use super::*;
 
 /// This requires that the target requirement does not already exist in the tree.
-pub trait Insert<NewReq, MinDepth, Queries, Next>
+pub trait Insert<NewReq, MinDepth, Queries, NotHasKind, Next>
 where
     MinDepth: IsNumber,
     Self::MinDepth: IsNumber,
+    Self: NotHas<NewReq, NotHasKind>,
 {
     /// Inserts a new requirement into the tree.
     /// If you want to replace an existing requirement, `remove` it beforehand.
@@ -14,8 +15,11 @@ where
 }
 
 // insert: insert into leaf node
-impl<Req, NewReq> Insert<NewReq, Succ<Zero>, Left<Here>, Node<Req, Node<NewReq, (), ()>, ()>>
+impl<Req, NewReq, NotHasKind>
+    Insert<NewReq, Succ<Zero>, Left<Here>, NotHasKind, Node<Req, Node<NewReq, (), ()>, ()>>
     for Node<Req, (), ()>
+where
+    Self: NotHas<NewReq, NotHasKind>,
 {
     fn insert(self, new_req: NewReq) -> Node<Req, Node<NewReq, (), ()>, ()> {
         Node {
@@ -34,13 +38,16 @@ impl<Req, NewReq> Insert<NewReq, Succ<Zero>, Left<Here>, Node<Req, Node<NewReq, 
 }
 
 // insert: insert into left-null tree
-impl<Req, ReqR, NewReq>
+impl<Req, ReqR, NewReq, NotHasKind>
     Insert<
         NewReq,
         Succ<Succ<Zero>>,
         Left<Right<Here>>,
+        NotHasKind,
         Node<Req, Node<NewReq, (), ()>, Node<ReqR, (), ()>>,
     > for Node<Req, (), Node<ReqR, (), ()>>
+where
+    Self: NotHas<NewReq, NotHasKind>,
 {
     fn insert(self, new_req: NewReq) -> Node<Req, Node<NewReq, (), ()>, Node<ReqR, (), ()>> {
         Node {
@@ -59,13 +66,16 @@ impl<Req, ReqR, NewReq>
 }
 
 // insert: insert into right-null tree
-impl<Req, ReqL, NewReq>
+impl<Req, ReqL, NewReq, NotHasKind>
     Insert<
         NewReq,
         Succ<Succ<Zero>>,
         Right<Left<Here>>,
+        NotHasKind,
         Node<Req, Node<ReqL, (), ()>, Node<NewReq, (), ()>>,
     > for Node<Req, Node<ReqL, (), ()>, ()>
+where
+    Self: NotHas<NewReq, NotHasKind>,
 {
     fn insert(self, new_req: NewReq) -> Node<Req, Node<ReqL, (), ()>, Node<NewReq, (), ()>> {
         Node {
@@ -95,11 +105,13 @@ impl<
     NewReq,
     NextSubtreeL,
     PrevQueriesL,
+    NotHasKind,
 >
     Insert<
         NewReq,
         <Node<Req, NextSubtreeL, Node<ReqR, SubtreeRL, SubtreeRR>> as MinDepth>::Output,
         Left<PrevQueriesL>,
+        NotHasKind,
         Node<Req, NextSubtreeL, Node<ReqR, SubtreeRL, SubtreeRR>>,
     > for Node<Req, Node<ReqL, SubtreeLL, SubtreeLR>, Node<ReqR, SubtreeRL, SubtreeRR>>
 where
@@ -108,11 +120,12 @@ where
     Node<Req, NextSubtreeL, Node<ReqR, SubtreeRL, SubtreeRR>>: MinDepth,
     NextSubtreeL: MinDepth,
     Node<ReqL, SubtreeLL, SubtreeLR>:
-        Insert<NewReq, <NextSubtreeL as MinDepth>::Output, PrevQueriesL, NextSubtreeL>,
+        Insert<NewReq, <NextSubtreeL as MinDepth>::Output, PrevQueriesL, NotHasKind, NextSubtreeL>,
     (): LessThan<
             <Node<ReqL, SubtreeLL, SubtreeLR> as MinDepth>::Output,
             <Node<ReqR, SubtreeRL, SubtreeRR> as MinDepth>::Output,
         >,
+    Self: NotHas<NewReq, NotHasKind>,
 {
     fn insert(self, new_req: NewReq) -> Node<Req, NextSubtreeL, Node<ReqR, SubtreeRL, SubtreeRR>> {
         Node {
@@ -139,11 +152,13 @@ impl<
     NewReq,
     NextSubtreeR,
     PrevQueriesR,
+    NotHasKind,
 >
     Insert<
         NewReq,
         <Node<Req, Node<ReqL, SubtreeLL, SubtreeLR>, NextSubtreeR> as MinDepth>::Output,
         Right<PrevQueriesR>,
+        NotHasKind,
         Node<Req, Node<ReqL, SubtreeLL, SubtreeLR>, NextSubtreeR>,
     > for Node<Req, Node<ReqL, SubtreeLL, SubtreeLR>, Node<ReqR, SubtreeRL, SubtreeRR>>
 where
@@ -152,11 +167,12 @@ where
     Node<Req, Node<ReqL, SubtreeLL, SubtreeLR>, NextSubtreeR>: MinDepth,
     NextSubtreeR: MinDepth,
     Node<ReqR, SubtreeRL, SubtreeRR>:
-        Insert<NewReq, <NextSubtreeR as MinDepth>::Output, PrevQueriesR, NextSubtreeR>,
+        Insert<NewReq, <NextSubtreeR as MinDepth>::Output, PrevQueriesR, NotHasKind, NextSubtreeR>,
     (): GreaterThanOrEqual<
             <Node<ReqL, SubtreeLL, SubtreeLR> as MinDepth>::Output,
             <Node<ReqR, SubtreeRL, SubtreeRR> as MinDepth>::Output,
         >,
+    Self: NotHas<NewReq, NotHasKind>,
 {
     fn insert(self, new_req: NewReq) -> Node<Req, Node<ReqL, SubtreeLL, SubtreeLR>, NextSubtreeR> {
         Node {

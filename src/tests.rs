@@ -29,14 +29,14 @@ fn test_get() {
 
 #[test]
 fn test_insert() {
-    let layer = Layer::new(10u32);
-    let layer = layer.insert(-5i32);
-    let layer = layer.insert(3.14f32);
-    let layer = layer.insert(true);
-    let layer = layer.insert(Some(10u32));
-    let layer = layer.insert(Some(-5i32));
-    let layer = layer.insert(Some(3.14f32));
-    let layer = layer.insert(Some(true));
+    let layer = Layer::new(10u32)
+        .insert(-5i32)
+        .insert(3.14f32)
+        .insert(true)
+        .insert(Some(10u32))
+        .insert(Some(-5i32))
+        .insert(Some(3.14f32))
+        .insert(Some(true));
     assert_eq!(*layer.get::<u32, _>(), 10u32);
     assert_eq!(*layer.get::<i32, _>(), -5i32);
     assert_eq!(*layer.get::<f32, _>(), 3.14f32);
@@ -45,4 +45,13 @@ fn test_insert() {
     assert_eq!(*layer.get::<Option<i32>, _>(), Some(-5i32));
     assert_eq!(*layer.get::<Option<f32>, _>(), Some(3.14f32));
     assert_eq!(*layer.get::<Option<bool>, _>(), Some(true));
+}
+
+#[test]
+fn test_replace() {
+    let mut layer = Layer::new(10u32).insert(-5i32).insert(3.14f32).insert(true);
+    assert_eq!(*layer.get::<i32, _>(), -5i32);
+    let old_value = layer.replace::<i32, _>(42i32);
+    assert_eq!(old_value, -5i32);
+    assert_eq!(*layer.get::<i32, _>(), 42i32);
 }

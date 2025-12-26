@@ -36,13 +36,23 @@ impl<Node> Layer<Node> {
         self.node.get_mut()
     }
 
-    pub fn insert<NewReq, MinDepth, NextPath, Next>(self, new_req: NewReq) -> Layer<Next>
+    pub fn insert<NewReq, MinDepth, NextPath, NotHasKind, Next>(
+        self,
+        new_req: NewReq,
+    ) -> Layer<Next>
     where
         MinDepth: IsNumber,
-        Node: Insert<NewReq, MinDepth, NextPath, Next>,
+        Node: Insert<NewReq, MinDepth, NextPath, NotHasKind, Next>,
     {
         Layer {
             node: self.node.insert(new_req),
         }
+    }
+
+    pub fn replace<NewReq, Path>(&mut self, replacement: NewReq) -> NewReq
+    where
+        Node: Replace<NewReq, Path>,
+    {
+        self.node.replace(replacement)
     }
 }
